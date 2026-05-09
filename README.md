@@ -1,2 +1,3 @@
-# webstudio-semeynaya-stomatologiya-fb389127
-Web Studio landing for Семейная Стоматология
+# Welcome to your Lovable project
+
+TODO: Document your project here
