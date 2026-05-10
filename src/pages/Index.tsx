@@ -1,322 +1,341 @@
-import { Phone, MapPin, Clock, Star, Shield, Heart, Smile, Baby, Sparkles, Stethoscope, CheckCircle2 } from "lucide-react";
+import { Phone, MapPin, Clock, Star, ShieldCheck, Users, Stethoscope, Baby, Sparkles, Smile, Activity, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { toast } from "sonner";
-import clinicHero from "@/assets/clinic-hero.jpg";
-import doctor1 from "@/assets/doctor-1.jpg";
-import doctor2 from "@/assets/doctor-2.jpg";
-import doctor3 from "@/assets/doctor-3.jpg";
 
 const PHONE = "+7 (495) 123-45-67";
-const PHONE_TEL = "+74951234567";
+const PHONE_HREF = "tel:+74951234567";
 const ADDRESS = "Москва, ул. Примерная, д. 12";
 
 const services = [
-  { icon: Stethoscope, title: "Консультация и осмотр", price: "Бесплатно при лечении", desc: "Полная диагностика, план лечения, ответы на вопросы." },
-  { icon: Sparkles, title: "Профессиональная гигиена", price: "от 4 500 ₽", desc: "Ультразвук, Air Flow, полировка, фторирование." },
-  { icon: Smile, title: "Лечение кариеса", price: "от 3 900 ₽", desc: "Современные материалы, лечение под микроскопом." },
-  { icon: Shield, title: "Имплантация", price: "от 35 000 ₽", desc: "Импланты Straumann, Osstem, Nobel. Гарантия." },
-  { icon: Heart, title: "Протезирование", price: "от 18 000 ₽", desc: "Коронки, виниры, съёмные и несъёмные протезы." },
-  { icon: Baby, title: "Детская стоматология", price: "от 2 500 ₽", desc: "Лечение без страха, врач находит подход к ребёнку." },
+  { icon: Stethoscope, title: "Терапия и лечение кариеса", desc: "Лечение зубов под микроскопом, безболезненная анестезия.", price: "от 3 500 ₽" },
+  { icon: Sparkles, title: "Профессиональная гигиена", desc: "Чистка Air Flow, ультразвук, полировка и фторирование.", price: "от 4 900 ₽" },
+  { icon: Smile, title: "Эстетическая стоматология", desc: "Виниры, отбеливание, реставрация передних зубов.", price: "от 12 000 ₽" },
+  { icon: Activity, title: "Хирургия и имплантация", desc: "Удаление, имплантаты Osstem, Straumann. Гарантия.", price: "от 25 000 ₽" },
+  { icon: ShieldCheck, title: "Протезирование", desc: "Коронки, мосты, съёмные протезы. Цифровой слепок.", price: "от 18 000 ₽" },
+  { icon: Baby, title: "Детская стоматология", desc: "Бережный приём с 3 лет. Лечение в игровой форме.", price: "от 2 500 ₽" },
 ];
 
 const reviews = [
-  { name: "Анна К.", text: "Привела сюда всю семью — и мужа, и двоих детей. Спокойно, без давления, всё объясняют. Цены адекватные.", rating: 5 },
-  { name: "Дмитрий С.", text: "Лечил кариес у Игоря Сергеевича. Всё аккуратно, без боли, дали гарантию. Рекомендую.", rating: 5 },
-  { name: "Марина Л.", text: "Долго боялась стоматологов. Здесь нашли подход, теперь хожу только сюда. Чисто, современное оборудование.", rating: 5 },
-  { name: "Екатерина П.", text: "Дочка 6 лет — обычно слёзы и истерика. С Анной Викторовной всё прошло спокойно, ребёнок просится ещё.", rating: 5 },
-];
-
-const doctors = [
-  { name: "Анна Викторовна Смирнова", role: "Терапевт, детский стоматолог", exp: "12 лет опыта", img: doctor1 },
-  { name: "Игорь Сергеевич Орлов", role: "Хирург-имплантолог", exp: "15 лет опыта", img: doctor2 },
-  { name: "Мария Александровна Лебедева", role: "Ортодонт, гигиенист", exp: "9 лет опыта", img: doctor3 },
+  { name: "Ирина М.", text: "Ходим всей семьёй уже 3 года. Врачи внимательные, ребёнок не боится — а это для нас главное.", rating: 5 },
+  { name: "Алексей К.", text: "Поставили имплант — всё чётко, без боли. Цена соответствует качеству, рассказали обо всех этапах.", rating: 5 },
+  { name: "Ольга П.", text: "Делала чистку и отбеливание. Аккуратно, аккуратный персонал, удобное время записи.", rating: 5 },
 ];
 
 const process = [
-  { step: "01", title: "Запись по телефону или онлайн", desc: "Подберём удобное время в течение дня." },
-  { step: "02", title: "Бесплатная консультация", desc: "Осмотр, снимок, понятный план лечения с ценами." },
-  { step: "03", title: "Лечение без боли", desc: "Современная анестезия, спокойная атмосфера." },
-  { step: "04", title: "Гарантия и наблюдение", desc: "Гарантия на работы, контрольный визит бесплатно." },
+  { step: "01", title: "Запись на приём", desc: "По телефону или через форму на сайте — подберём удобное время." },
+  { step: "02", title: "Осмотр и диагностика", desc: "Бесплатная консультация, снимок, план лечения с ценами." },
+  { step: "03", title: "Лечение", desc: "Согласуем все этапы заранее. Без навязанных услуг." },
+  { step: "04", title: "Гарантия и контроль", desc: "Гарантия на работы. Бесплатный осмотр через 3 месяца." },
 ];
 
 const Index = () => {
-  const [form, setForm] = useState({ name: "", phone: "", note: "" });
+  const { toast } = useToast();
+  const [form, setForm] = useState({ name: "", phone: "", message: "" });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.phone) {
-      toast.error("Укажите имя и телефон");
+      toast({ title: "Заполните имя и телефон", variant: "destructive" });
       return;
     }
-    toast.success("Заявка принята. Перезвоним в течение 15 минут.");
-    setForm({ name: "", phone: "", note: "" });
+    toast({ title: "Заявка отправлена", description: "Мы перезвоним в ближайшее время." });
+    setForm({ name: "", phone: "", message: "" });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between gap-4">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur border-b border-border">
+        <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Smile className="h-5 w-5" />
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <Smile className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div className="leading-tight">
-              <div className="font-semibold">Семейная Стоматология</div>
-              <div className="hidden text-xs text-muted-foreground sm:block">Москва · с 2020 года</div>
+            <div>
+              <div className="font-bold text-base leading-tight">Семейная Стоматология</div>
+              <div className="text-xs text-muted-foreground">Клиника в Москве</div>
             </div>
           </div>
-          <a href={`tel:${PHONE_TEL}`} className="hidden items-center gap-2 text-sm font-medium text-foreground hover:text-primary md:flex">
-            <Phone className="h-4 w-4" /> {PHONE}
-          </a>
-          <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <a href="#zapis">Записаться</a>
+          <nav className="hidden md:flex items-center gap-6 text-sm">
+            <a href="#services" className="hover:text-primary transition-colors">Услуги</a>
+            <a href="#doctors" className="hover:text-primary transition-colors">Врачи</a>
+            <a href="#prices" className="hover:text-primary transition-colors">Цены</a>
+            <a href="#contacts" className="hover:text-primary transition-colors">Контакты</a>
+          </nav>
+          <Button asChild size="sm" className="hidden sm:inline-flex">
+            <a href={PHONE_HREF}><Phone className="w-4 h-4 mr-2" />Позвонить</a>
           </Button>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: "var(--gradient-soft)" }}>
-        <div className="container grid gap-10 py-12 md:grid-cols-2 md:py-20 md:gap-12 items-center">
+      <section className="gradient-hero">
+        <div className="container py-12 md:py-20 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-primary">
-              <Star className="h-3.5 w-3.5 fill-primary" /> 4,9 на Яндекс Картах · 180+ отзывов
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card shadow-card text-sm mb-6">
+              <Star className="w-4 h-4 fill-accent text-accent" />
+              <span className="font-medium">4.9 на Яндекс.Картах</span>
+              <span className="text-muted-foreground">· 5 лет работы</span>
             </div>
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Семейная стоматология <br />в Москве — спокойно, без боли и переплат
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5">
+              Семейная стоматология,<br />которой доверяют
             </h1>
-            <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-              Принимаем взрослых и детей. Лечим, ставим импланты, делаем чистку. Бесплатная консультация и понятный план лечения с ценами на первом приёме.
+            <p className="text-lg text-muted-foreground mb-8 max-w-lg">
+              Лечим взрослых и детей в одной клинике. Прозрачные цены, опытные врачи и спокойная атмосфера — без боли и давления.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <a href="#zapis">Записаться на приём</a>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild size="lg" className="text-base">
+                <a href="#form">Записаться на приём</a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary/30 text-primary hover:bg-primary-soft">
-                <a href={`tel:${PHONE_TEL}`}><Phone className="mr-2 h-4 w-4" /> {PHONE}</a>
+              <Button asChild size="lg" variant="outline" className="text-base">
+                <a href={PHONE_HREF}><Phone className="w-4 h-4 mr-2" />{PHONE}</a>
               </Button>
             </div>
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-border pt-6 text-sm">
-              <div><div className="text-2xl font-semibold text-primary">5</div><div className="text-muted-foreground">лет в районе</div></div>
-              <div><div className="text-2xl font-semibold text-primary">12+</div><div className="text-muted-foreground">врачей</div></div>
-              <div><div className="text-2xl font-semibold text-primary">2 года</div><div className="text-muted-foreground">гарантия</div></div>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Бесплатная консультация</div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Гарантия на работы</div>
+              <div className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Рассрочка 0%</div>
             </div>
           </div>
           <div className="relative">
-            <img src={clinicHero} alt="Интерьер семейной стоматологии в Москве" width={1536} height={1024}
-              className="w-full rounded-2xl object-cover shadow-[var(--shadow-soft)]" style={{ aspectRatio: "4/3" }} />
-            <div className="absolute -bottom-5 -left-5 hidden rounded-xl bg-card p-4 shadow-[var(--shadow-card)] md:block">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <CheckCircle2 className="h-5 w-5 text-accent" /> Работаем 7 дней в неделю
+            <Card className="p-6 shadow-soft">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-primary-soft flex items-center justify-center shrink-0">
+                  <Clock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold mb-1">Сегодня свободны окна</div>
+                  <div className="text-sm text-muted-foreground">Запись на ближайшие дни — обычно подтверждаем за 15 минут.</div>
+                </div>
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">Пн–Вс · 09:00 — 21:00</div>
-            </div>
+              <div className="space-y-3">
+                {[
+                  { time: "10:30", doc: "Терапия — Иванова А.В." },
+                  { time: "13:00", doc: "Гигиена — Петрова М.С." },
+                  { time: "16:45", doc: "Детский приём — Сидоров К.Н." },
+                ].map((s) => (
+                  <div key={s.time} className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+                    <div>
+                      <div className="font-semibold">{s.time}</div>
+                      <div className="text-xs text-muted-foreground">{s.doc}</div>
+                    </div>
+                    <Button asChild size="sm" variant="outline"><a href="#form">Занять</a></Button>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Trust strip */}
-      <section className="border-y border-border bg-card">
-        <div className="container grid gap-6 py-8 sm:grid-cols-2 md:grid-cols-4">
-          {[
-            { icon: Star, title: "4,9 на Яндексе", sub: "180+ отзывов от пациентов" },
-            { icon: Shield, title: "Лицензия и гарантия", sub: "Все работы — с гарантией до 2 лет" },
-            { icon: Heart, title: "Семейный формат", sub: "Скидки семьям и постоянным пациентам" },
-            { icon: Clock, title: "Быстрая запись", sub: "Перезваниваем за 15 минут" },
-          ].map((b, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                <b.icon className="h-5 w-5" />
+      {/* Trust / Reviews */}
+      <section className="py-16 md:py-20">
+        <div className="container">
+          <div className="grid md:grid-cols-4 gap-6 mb-14">
+            {[
+              { num: "5 лет", label: "работаем в районе" },
+              { num: "4.9", label: "на Яндекс.Картах" },
+              { num: "12 000+", label: "пациентов" },
+              { num: "8", label: "врачей в команде" },
+            ].map((s) => (
+              <div key={s.label} className="text-center md:text-left">
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">{s.num}</div>
+                <div className="text-sm text-muted-foreground">{s.label}</div>
               </div>
-              <div>
-                <div className="font-medium">{b.title}</div>
-                <div className="text-sm text-muted-foreground">{b.sub}</div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">Отзывы пациентов</h2>
+          <p className="text-muted-foreground mb-10">Реальные отзывы с Яндекс.Карт и 2ГИС</p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {reviews.map((r) => (
+              <Card key={r.name} className="p-6 shadow-card">
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: r.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed mb-4">«{r.text}»</p>
+                <div className="text-sm font-semibold">{r.name}</div>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Services */}
-      <section id="uslugi" className="py-16 md:py-24">
+      <section id="services" className="py-16 md:py-20 bg-secondary/40">
         <div className="container">
-          <div className="mb-10 max-w-2xl">
-            <div className="text-sm font-medium uppercase tracking-wider text-primary">Услуги и цены</div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Что мы делаем</h2>
-            <p className="mt-3 text-muted-foreground">Полный цикл лечения для всей семьи. Окончательная стоимость — после осмотра, без скрытых доплат.</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((s, i) => (
-              <div key={i} className="group rounded-2xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-[var(--shadow-card)]">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                  <s.icon className="h-5 w-5" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">Услуги</h2>
+          <p className="text-muted-foreground mb-10 max-w-xl">Полный спектр стоматологической помощи для всей семьи.</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {services.map((s) => (
+              <Card key={s.title} className="p-6 shadow-card hover:shadow-soft transition-shadow">
+                <div className="w-11 h-11 rounded-lg bg-primary-soft flex items-center justify-center mb-4">
+                  <s.icon className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{s.desc}</p>
+                <div className="flex items-center justify-between pt-3 border-t border-border">
                   <span className="text-sm text-muted-foreground">Цена</span>
                   <span className="font-semibold text-primary">{s.price}</span>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* Doctors */}
-      <section id="vrachi" className="bg-secondary/40 py-16 md:py-24">
+      <section id="doctors" className="py-16 md:py-20">
         <div className="container">
-          <div className="mb-10 max-w-2xl">
-            <div className="text-sm font-medium uppercase tracking-wider text-primary">Команда</div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Наши врачи</h2>
-            <p className="mt-3 text-muted-foreground">Опытные специалисты, регулярно проходят обучение. Каждый врач принимает и взрослых, и детей.</p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {doctors.map((d, i) => (
-              <div key={i} className="overflow-hidden rounded-2xl bg-card shadow-[var(--shadow-card)]">
-                <img src={d.img} alt={d.name} loading="lazy" width={640} height={800} className="aspect-[4/5] w-full object-cover" />
-                <div className="p-5">
-                  <h3 className="font-semibold">{d.name}</h3>
-                  <div className="mt-1 text-sm text-primary">{d.role}</div>
-                  <div className="mt-2 text-sm text-muted-foreground">{d.exp}</div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">Наши врачи</h2>
+          <p className="text-muted-foreground mb-10">Стаж от 8 лет, регулярное повышение квалификации.</p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { name: "Иванова Анна Викторовна", role: "Стоматолог-терапевт", exp: "Стаж 14 лет" },
+              { name: "Петрова Мария Сергеевна", role: "Гигиенист, ортодонт", exp: "Стаж 9 лет" },
+              { name: "Сидоров Кирилл Николаевич", role: "Детский стоматолог", exp: "Стаж 11 лет" },
+            ].map((d) => (
+              <Card key={d.name} className="p-6 shadow-card">
+                <div className="w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mb-4">
+                  <Users className="w-7 h-7 text-primary" />
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section id="otzyvy" className="py-16 md:py-24">
-        <div className="container">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="text-sm font-medium uppercase tracking-wider text-primary">Отзывы</div>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Что говорят пациенты</h2>
-            </div>
-            <div className="flex items-center gap-2 rounded-full bg-primary-soft px-4 py-2">
-              <Star className="h-4 w-4 fill-primary text-primary" />
-              <span className="font-semibold">4,9</span>
-              <span className="text-sm text-muted-foreground">на Яндекс Картах</span>
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {reviews.map((r, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-6">
-                <div className="flex gap-1">
-                  {Array.from({ length: r.rating }).map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-primary text-primary" />
-                  ))}
-                </div>
-                <p className="mt-3 text-foreground/90">«{r.text}»</p>
-                <div className="mt-4 text-sm text-muted-foreground">{r.name}</div>
-              </div>
+                <div className="font-semibold mb-1">{d.name}</div>
+                <div className="text-sm text-primary mb-1">{d.role}</div>
+                <div className="text-sm text-muted-foreground">{d.exp}</div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* Process */}
-      <section className="bg-secondary/40 py-16 md:py-24">
+      <section className="py-16 md:py-20 bg-secondary/40">
         <div className="container">
-          <div className="mb-10 max-w-2xl">
-            <div className="text-sm font-medium uppercase tracking-wider text-primary">Как это работает</div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">От записи до результата</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-10">Как проходит лечение</h2>
+          <div className="grid md:grid-cols-4 gap-6">
             {process.map((p) => (
-              <div key={p.step} className="rounded-2xl bg-card p-6">
-                <div className="text-sm font-semibold text-primary">{p.step}</div>
-                <h3 className="mt-2 font-semibold">{p.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{p.desc}</p>
+              <div key={p.step}>
+                <div className="text-3xl font-bold text-primary mb-3">{p.step}</div>
+                <h3 className="font-semibold mb-2">{p.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Form + Contacts */}
-      <section id="zapis" className="py-16 md:py-24">
-        <div className="container grid gap-10 lg:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Записаться на приём</h2>
-            <p className="mt-2 text-muted-foreground">Оставьте телефон — администратор перезвонит в течение 15 минут, подберёт удобное время и врача.</p>
-            <form onSubmit={submit} className="mt-6 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Имя</label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Как к вам обращаться" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Телефон</label>
-                <Input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+7 (___) ___-__-__" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Что беспокоит (необязательно)</label>
-                <Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="Например: чистка, болит зуб, для ребёнка 7 лет" rows={3} />
-              </div>
-              <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                Отправить заявку
-              </Button>
-              <p className="text-xs text-muted-foreground">Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.</p>
-            </form>
+      {/* Form */}
+      <section id="form" className="py-16 md:py-20" aria-labelledby="prices">
+        <div className="container grid lg:grid-cols-2 gap-10">
+          <div id="prices">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Запись и расчёт стоимости</h2>
+            <p className="text-muted-foreground mb-6">
+              Оставьте заявку — администратор перезвонит, подберёт врача и удобное время. Назовём примерную стоимость по вашему случаю.
+            </p>
+            <ul className="space-y-3 mb-8">
+              {[
+                "Бесплатная первичная консультация",
+                "Подробный план лечения с ценами",
+                "Без навязанных услуг",
+                "Рассрочка 0% на 6 месяцев",
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3 h-3 text-accent-foreground" />
+                  </div>
+                  <span className="text-sm">{t}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="p-5 rounded-xl bg-primary-soft">
+              <div className="text-sm text-muted-foreground mb-1">Или позвоните напрямую</div>
+              <a href={PHONE_HREF} className="text-2xl font-bold text-primary">{PHONE}</a>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-              <h3 className="text-xl font-semibold">Контакты</h3>
-              <div className="mt-5 space-y-4 text-sm">
-                <div className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
-                  <div>
-                    <div className="font-medium">Адрес</div>
-                    <div className="text-muted-foreground">{ADDRESS}</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Phone className="mt-0.5 h-5 w-5 text-primary" />
-                  <div>
-                    <div className="font-medium">Телефон</div>
-                    <a href={`tel:${PHONE_TEL}`} className="text-muted-foreground hover:text-primary">{PHONE}</a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-5 w-5 text-primary" />
-                  <div>
-                    <div className="font-medium">Часы работы</div>
-                    <div className="text-muted-foreground">Пн–Вс · 09:00 — 21:00</div>
-                  </div>
-                </div>
+          <Card className="p-6 md:p-8 shadow-soft">
+            <form onSubmit={submit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Ваше имя</label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Анна" />
               </div>
-              <Button asChild size="lg" className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                <a href={`tel:${PHONE_TEL}`}><Phone className="mr-2 h-4 w-4" /> Позвонить сейчас</a>
-              </Button>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-border bg-card">
-              <iframe
-                title="Карта"
-                src="https://yandex.ru/map-widget/v1/?ll=37.617635%2C55.755814&z=14"
-                className="h-72 w-full border-0"
-                loading="lazy"
-              />
-            </div>
-          </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Телефон</label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+7 (___) ___-__-__" type="tel" />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Что беспокоит (необязательно)</label>
+                <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Например: чистка, болит зуб, нужен осмотр ребёнку" rows={4} />
+              </div>
+              <Button type="submit" size="lg" className="w-full">Отправить заявку</Button>
+              <p className="text-xs text-muted-foreground text-center">
+                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных
+              </p>
+            </form>
+          </Card>
         </div>
       </section>
 
-      <footer className="border-t border-border bg-card py-8">
-        <div className="container flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
-          <div>© {new Date().getFullYear()} Семейная Стоматология · Москва</div>
-          <div>Лицензия № ЛО-77-01-000000 от 01.01.2020</div>
+      {/* Contacts */}
+      <section id="contacts" className="py-16 md:py-20 bg-secondary/40">
+        <div className="container grid md:grid-cols-2 gap-8 items-start">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Контакты</h2>
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <MapPin className="w-5 h-5 text-primary shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold">Адрес</div>
+                  <div className="text-muted-foreground">{ADDRESS}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Phone className="w-5 h-5 text-primary shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold">Телефон</div>
+                  <a href={PHONE_HREF} className="text-muted-foreground hover:text-primary">{PHONE}</a>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Clock className="w-5 h-5 text-primary shrink-0 mt-1" />
+                <div>
+                  <div className="font-semibold">Часы работы</div>
+                  <div className="text-muted-foreground">Пн–Пт: 9:00 – 21:00<br />Сб–Вс: 10:00 – 20:00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Card className="overflow-hidden shadow-card aspect-[4/3] md:aspect-auto md:h-full min-h-[320px]">
+            <iframe
+              title="Карта"
+              src="https://yandex.ru/map-widget/v1/?ll=37.617635%2C55.755814&z=12"
+              className="w-full h-full border-0"
+              loading="lazy"
+            />
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-border">
+        <div className="container flex flex-col md:flex-row gap-4 justify-between items-center text-sm text-muted-foreground">
+          <div>© 2025 Семейная Стоматология. Все права защищены.</div>
+          <div>Лицензия № ЛО-77-01-000000</div>
         </div>
       </footer>
 
       {/* Mobile sticky CTA */}
-      <a href={`tel:${PHONE_TEL}`} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-soft)] md:hidden" aria-label="Позвонить">
-        <Phone className="h-6 w-6" />
-      </a>
+      <div className="fixed bottom-4 left-4 right-4 sm:hidden z-50">
+        <Button asChild size="lg" className="w-full shadow-soft">
+          <a href={PHONE_HREF}><Phone className="w-4 h-4 mr-2" />Позвонить · записаться</a>
+        </Button>
+      </div>
     </div>
   );
 };
